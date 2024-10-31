@@ -83,11 +83,10 @@
                                         {{ $historial->estatus === '0' ? 'Solicitadas' : 'Autorizado' }}
                                     </th>
                                     <th class="col-1">
-                                        <a href="{{ asset($historial->pdf) }}" target="_blank">
-                                            <img class="imagen-container" src="{{ asset('img/detalles.png') }}"
-                                                alt="Abrir PDF">
+                                        <a href="{{ asset('vacaciones/' . $historial->pdf) }}" target="_blank">
+                                            <img class="imagen-container" src="{{ asset('img/detalles.png') }}" alt="Abrir PDF">
                                         </a>
-                                    </th>
+                                    </th>                                    
                                     <th class="col-1">
                                         @if ($historial->estatus == '1')
                                             <a href="#" class="btn btn-info" onclick="return false;"
