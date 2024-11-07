@@ -37,7 +37,6 @@ class controladorEmpleado extends Controller
                 ->first();
 
             $dias_tomados = vacaciones::where('empleado_id', session('loginId'))
-                ->where('estatus', '1')
                 ->sum('dias_tomados');
 
             // Agregar a la sesión
@@ -83,7 +82,6 @@ class controladorEmpleado extends Controller
 
                 $acumulado = round($dias1+$dias2+($dias3->acumulado-12));
                 $dias_tomados = vacaciones::where('empleado_id', session('loginId'))
-                ->where('estatus', '1')
                 ->sum('dias_tomados');
 
                 // Agregar a la sesión
