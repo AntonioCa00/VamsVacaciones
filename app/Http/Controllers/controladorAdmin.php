@@ -385,11 +385,11 @@ class controladorAdmin extends Controller
                 "created_at"=>Carbon::now(),
                 "updated_at"=>Carbon::now()
             ]);
+
+            $horarioFinal = horarios::latest()->first();
         } else {
             $horarioFinal = $horario;
         }
-
-        $horarioFinal = horarios::latest()->first();
 
         if(empty($personal)){
             if (empty($n_empleado) || $n_empleado->estatus ==='0' ){
