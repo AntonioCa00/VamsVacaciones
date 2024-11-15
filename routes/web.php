@@ -101,6 +101,7 @@ Route::middleware(['authcheck'])->group(function () {
         Route::get('consultar/vacaciones/programacion', [controladorEncargado::class, 'getEvents'])->name('programa');
         Route::get('personal/Encargado',[controladorEncargado::class,'tablePersonal'])->name('personalEnc');
         Route::get('personal/crear/Encargado',[controladorEncargado::class,'crearPersonal'])->name('crearPersonalEnc');
+        Route::get('historial/Induvidual/{id}',[controladorEncargado::class,'histoIndividual'])->name('histoIndividual');
         Route::get('personal/editar/Encargado/{id}',[controladorEncargado::class,'editarPersonal'])->name('editarPersonalEnc');
         Route::get('personal/reporte/Encargado',[controladorEncargado::class,'reporteGeneral'])->name('reporte');
 
