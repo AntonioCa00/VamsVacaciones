@@ -716,7 +716,6 @@ class controladorEncargado extends Controller
         ->join('horarios', 'empleados.horario_id','horarios.id_horario')
         ->join('puestos','empleados.puesto_id','puestos.id_puesto')
         ->where('empleados.estatus','1')
-        ->where('empleados.rol','!=','Administrador')
         ->get();
 
         return view('Encargado.personal',compact('personal'));
@@ -868,6 +867,32 @@ class controladorEncargado extends Controller
         }
 
         return redirect('personal/Encargado')->with('editado','editado');
+    }
+
+    public function histoIndividual($id){
+        $historialVac = vacaciones::where('empleado_id',$id)
+        ->get();
+
+        $empleado = Empleados::where('id_empleado',$id)->first();
+
+        foreach ($historialVac as $historial) {
+            // Convertir la fecha de inicio a una instancia de Carbon y formatear solo la fecha como dd/MM/yyyy
+            $fechaDesdeEsp = Carbon::parse($historial->fecha_inicio)->translatedFormat('d/M/Y');
+            $historial->inicio = $fechaDesdeEsp;
+
+            // Convertir la fecha de fin a una instancia de Carbon y formatear solo la fecha como dd/MM/yyyy
+            $fechaHastaEsp = Carbon::parse($historial->fecha_fin)->translatedFormat('d/M/Y');
+            $historial->fin = $fechaHastaEsp;
+
+            // Primero, convertir a una instancia de Carbon y formatear a 'Y-m-d'
+            $fechaCreated = date('d/m/Y', strtotime($historial->created_at));
+            // Luego, convertir a una instancia de Carbon y formatear a 'd/M/Y'
+            $fechaCreatedEsp = Carbon::parse($historial->created_at)->translatedFormat('d/M/Y');
+
+            $historial->fecha_creacion = $fechaCreatedEsp;
+        }
+
+        return view('Encargado.histIndividual',compact('historialVac','empleado'));
     }
 
     public function reporteGeneral(){

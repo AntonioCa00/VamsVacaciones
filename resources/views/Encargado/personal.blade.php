@@ -55,7 +55,7 @@
             <div class="card-header py-3">
                 <a class="btn btn-primary" href="{{ route('crearPersonalEnc') }}">Agregar nuevo personal</a>
                 <a class="btn btn-success" href="{{ route('reporte') }}" style="margin-left: 70%;"><i
-                    class="fas fa-download fa-sm text-white-50"></i>   Reporte general</a>
+                    class="fas fa-download fa-sm text-white-50"></i>Reporte general</a>
             </div>
             <div class="card-header py-3">
             </div>
@@ -166,19 +166,18 @@
                                                     <h6>{{ $persona->horario }}</h6>
                                                 </div>
                                             </div>
-                                            <div class="modal-footer">
-                                                <a href="{{ route('editarPersonalEnc', $persona->id_empleado) }}"
-                                                    class="btn btn-success">Actualizar información</a>
+                                            <div class="modal-footer py-2 d-flex justify-content-between">
+                                                <a class="btn btn-warning" href="{{ route('histoIndividual',$persona->id_empleado) }}">Revisar historial</a>
+                                                <a href="{{ route('editarPersonalEnc', $persona->id_empleado) }}" class="btn btn-success">Actualizar información</a>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                </div>
-                @endforeach
-                </tbody>
+                            </div>
+                        @endforeach
+                    </tbody>
                 </table>
             </div>
         </div>
-    </div>
     </div>
 @endsection

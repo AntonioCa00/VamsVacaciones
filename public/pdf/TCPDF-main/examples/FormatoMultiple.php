@@ -278,7 +278,7 @@ if($permiso === 'Vacaciones'){
     $nombreArchivo = 'vacaciones_' . $idcorresponde . '.pdf';
 
     $rutaDescarga = 'C:/wamp64/www/VamsVacaciones/public/vacaciones/' . $nombreArchivo;
-    //$rutaDescarga = 'C:/wamp64/www/VamsVacaciones/public/vacaciones/'. $nombreArchivo;
+    //$rutaDescarga = 'C:/laragon/www/VamsVacaciones/public/vacaciones/'. $nombreArchivo;
 
     $pdf->Output($rutaDescarga, 'F');
 } else {
