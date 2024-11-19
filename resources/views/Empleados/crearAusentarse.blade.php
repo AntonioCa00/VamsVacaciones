@@ -52,7 +52,7 @@
                             <label for="hasta">PERMISO CON:</label>
                             <div class="form-check form-check-inline">
                                 <input type="radio" class="btn-check" value="Con" name="tipo" id="option1"
-                                    autocomplete="off" required>
+                                    autocomplete="off" required disabled>
                                 <label class="btn btn-outline-success" for="option1">CON GOCE</label>
                             </div>
                             <div class="form-check form-check-inline">

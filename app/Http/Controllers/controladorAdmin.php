@@ -41,7 +41,6 @@ class controladorAdmin extends Controller
                 ->first();
 
             $dias_tomados = vacaciones::where('empleado_id', session('loginId'))
-                ->where('estatus', '1')
                 ->sum('dias_tomados');
 
             // Agregar a la sesión
@@ -87,7 +86,6 @@ class controladorAdmin extends Controller
 
                 $acumulado = round($dias1+$dias2+($dias3->acumulado-12));
                 $dias_tomados = vacaciones::where('empleado_id', session('loginId'))
-                ->where('estatus', '1')
                 ->sum('dias_tomados');
 
                 // Agregar a la sesión
@@ -387,11 +385,11 @@ class controladorAdmin extends Controller
                 "created_at"=>Carbon::now(),
                 "updated_at"=>Carbon::now()
             ]);
+
+            $horarioFinal = horarios::latest()->first();
         } else {
             $horarioFinal = $horario;
         }
-
-        $horarioFinal = horarios::latest()->first();
 
         if(empty($personal)){
             if (empty($n_empleado) || $n_empleado->estatus ==='0' ){
