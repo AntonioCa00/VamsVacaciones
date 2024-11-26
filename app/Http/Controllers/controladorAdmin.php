@@ -886,7 +886,7 @@ class controladorAdmin extends Controller
                 }
             }
 
-            if ($duracion < session('dias_disponibles')){
+            if ($duracion <= session('dias_disponibles')){
 
                 $fechaHoy = Carbon::now();
                 $motivo = $req->motivo;
