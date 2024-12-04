@@ -389,6 +389,8 @@ class controladorEncargado extends Controller
                 "updated_at"=>Carbon::now(),
             ]);
 
+            session()->put('dias_disponibles', $restantes);
+
             return redirect('historial/Encargado')->with('creado','creado');
 
         } else{
@@ -530,6 +532,8 @@ class controladorEncargado extends Controller
                 "updated_at"=>Carbon::now(),
             ]);
 
+            session()->put('dias_disponibles', $restantes);
+            
             return redirect('historial/Encargado')->with('editado','editado');
 
         } else{
@@ -1357,55 +1361,41 @@ class controladorEncargado extends Controller
         return null;
     }
 
-    public function obtenerDiasFestivos($year,$yearF)
+    public function obtenerDiasFestivos($year, $yearF)
     {
-        $client = new Client();
+        $client = new \GuzzleHttp\Client([
+            'verify' => 'C:\path\to\cacert.pem', // Ruta al archivo cacert.pem
+        ]);
+        try {
+            // Obtenemos los días festivos del primer año
+            $response1 = $client->request('GET', "https://date.nager.at/api/v3/PublicHolidays/{$year}/MX");
+            $festivos1 = json_decode($response1->getBody(), true);
 
-        if($year == $yearF){
-            try {
-                $response = $client->request('GET', "https://date.nager.at/api/v3/PublicHolidays/{$year}/MX");
-                $festivos = json_decode($response->getBody(), true);
-
-                // Filtrar solo los días públicos
-                $diasPublicos = array_filter($festivos, function($festivo) {
-                    return in_array('Public', $festivo['types']); // Verificar si 'Public' está en el array types
-                });
-
-                // Extraer las fechas de los días festivos públicos
-                return array_column($diasPublicos, 'date');
-            } catch (\Exception $e) {
-                // Manejo de errores
-                \Log::error('Error al obtener días festivos: ' . $e->getMessage());
-                return []; // Retorna un arreglo vacío en caso de error
-            }
-        } else {
-            try {
-                $response1 = $client->request('GET', "https://date.nager.at/api/v3/PublicHolidays/{$year}/MX");
-                $festivos1 = json_decode($response1->getBody(), true);
-
+            // Obtenemos los días festivos del segundo año (si aplica)
+            $festivos2 = [];
+            if ($year != $yearF) {
                 $response2 = $client->request('GET', "https://date.nager.at/api/v3/PublicHolidays/{$yearF}/MX");
                 $festivos2 = json_decode($response2->getBody(), true);
-
-                // Filtrar solo los días públicos
-                $diasPublicos1 = array_filter($festivos1, function($festivo) {
-                    return in_array('Public', $festivo['types']); // Verificar si 'Public' está en el array types
-                });
-
-                // Filtrar solo los días públicos
-                $diasPublicos2 = array_filter($festivos2, function($festivo) {
-                    return in_array('Public', $festivo['types']); // Verificar si 'Public' está en el array types
-                });
-
-                // Extraer las fechas de los días festivos públicos
-                $diasFestivos = array_merge($diasPublicos1,$diasPublicos2);
-
-                // Extraer las fechas de los días festivos públicos
-                return array_column($diasFestivos, 'date');
-            } catch (\Exception $e) {
-                // Manejo de errores
-                \Log::error('Error al obtener días festivos: ' . $e->getMessage());
-                return []; // Retorna un arreglo vacío en caso de error
             }
+
+            // Filtramos los días públicos
+            $diasPublicos1 = array_filter($festivos1, function($festivo) {
+                return in_array('Public', $festivo['types']);
+            });
+            $diasPublicos2 = array_filter($festivos2, function($festivo) {
+                return in_array('Public', $festivo['types']);
+            });
+
+            // Extraemos las fechas y las combinamos
+            $fechas1 = array_column($diasPublicos1, 'date');
+            $fechas2 = array_column($diasPublicos2, 'date');
+            $diasFestivos = array_merge($fechas1, $fechas2);
+
+            // Retornamos las fechas
+            return $diasFestivos;
+        } catch (\Exception $e) {
+            \Log::error('Error al obtener días festivos: ' . $e->getMessage());
+            return [];
         }
     }
 }

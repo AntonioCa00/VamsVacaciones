@@ -144,11 +144,11 @@
                                                 style="pointer-events: none; background-color: gray; cursor: not-allowed;">Eliminar</a>
                                         @else
                                             <a class="btn btn-danger" href="#" data-toggle="modal"
-                                                data-target="#eliminarhistorial{{ $historial->id_empleado }}">
+                                                data-target="#eliminarhistorial{{ $historial->id_vacacion }}">
                                                 Eliminar
                                             </a>
                                             <!-- Modal Eliminar Solicitud-->
-                                            <div class="modal fade" id="eliminarhistorial{{ $historial->id_empleado }}"
+                                            <div class="modal fade" id="eliminarhistorial{{ $historial->id_vacacion }}"
                                                 tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
                                                 aria-hidden="true">
                                                 <div class="modal-dialog" role="document">
