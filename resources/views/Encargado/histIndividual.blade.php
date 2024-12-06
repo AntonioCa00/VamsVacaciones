@@ -54,7 +54,9 @@
                                 <th>Días tomados:</th>
                                 <th>Estado:</th>
                                 <th>Detalles:</th>
-                                <th>Eliminar:</th>
+                                @if (session('area') != "LOGISTICA")
+                                    <th>Eliminar:</th>
+                                @endif                                
                             </tr>
                         </thead>
                         <tbody>
@@ -71,7 +73,8 @@
                                             <img class="imagen-container" src="{{ asset('img/detalles.png') }}" alt="Abrir PDF">
                                         </a>
                                     </th>
-                                    <th class="col-1">
+                                    @if (session('area') != "LOGISTICA")
+                                        <th class="col-1">
                                             <a class="btn btn-danger" href="#" data-toggle="modal"
                                                 data-target="#eliminarhistorial{{ $historial->id_empleado }}">
                                                 Eliminar
@@ -107,7 +110,8 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                    </th>
+                                        </th>
+                                    @endif                                    
                                 </tr>
                             @endforeach
                         </tbody>
