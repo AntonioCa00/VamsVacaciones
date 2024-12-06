@@ -16,7 +16,7 @@
     <div class="container-fluid">
         <div class="py-1 d-flex justify-content-between align-items-center">
             <!-- Page Heading -->
-            <h1 class="h3 mb-1 text-gray-800">MANTENIMIENTO UNIDADES</h1>
+            <h1 class="h3 mb-1 text-gray-800">VACACIONES SOLICITADAS</h1>
             <div>
                 <h3>Colores:</h3>
                 <div class="d-flex align-items-left">

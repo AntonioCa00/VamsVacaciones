@@ -690,8 +690,31 @@ class controladorEncargado extends Controller
     }
 
     public function getEvents(){
-        // Obtener las programaciones activas o en reprogramación y mapear los datos para el calendario de eventos
-        $events = vacaciones::select('vacaciones.id_vacacion', 'empleados.nombres', 'empleados.apellido_paterno', 'empleados.apellido_materno', 'vacaciones.fecha_inicio', 'vacaciones.fecha_fin', 'vacaciones.estatus')
+        if(session('area') === "LOGISTICA"){
+            // Obtener las programaciones activas o en reprogramación y mapear los datos para el calendario de eventos
+            $events = vacaciones::select('vacaciones.id_vacacion', 'empleados.nombres', 'empleados.apellido_paterno', 'empleados.apellido_materno', 'vacaciones.fecha_inicio', 'vacaciones.fecha_fin', 'vacaciones.estatus')
+            ->join('empleados', 'vacaciones.empleado_id', 'empleados.id_empleado')
+            ->join('puestos','empleados.puesto_id','puestos.id_puesto')
+            ->join('areas','puestos.area_id','areas.id_area')
+            ->where('areas.nombre','LOGISTICA')
+            ->get()->map(function ($event) {
+                $title = $event->nombres . ' ' . $event->apellido_paterno . ' ' . $event->apellido_materno;
+                // Asignar colores según el estatus
+                $color = $event->estatus == '0' ? '#587dd2 ' : '#18bb7d';
+
+                return [
+                    'id' => $event->id_vacacion,
+                    'title' => $title,
+                    'start' => $event->fecha_inicio,
+                    'end' => \Carbon\Carbon::parse($event->fecha_fin)->addDay()->toDateString(),
+                    'originalEnd' => $event->fecha_fin, // Agregar la fecha de fin original
+                    'status' => $event->estatus,
+                    'color' => $color, // Agrega el color aquí
+                ];
+            });
+        } else {
+            // Obtener las programaciones activas o en reprogramación y mapear los datos para el calendario de eventos
+            $events = vacaciones::select('vacaciones.id_vacacion', 'empleados.nombres', 'empleados.apellido_paterno', 'empleados.apellido_materno', 'vacaciones.fecha_inicio', 'vacaciones.fecha_fin', 'vacaciones.estatus')
             ->join('empleados', 'vacaciones.empleado_id', 'empleados.id_empleado')
             ->get()->map(function ($event) {
                 $title = $event->nombres . ' ' . $event->apellido_paterno . ' ' . $event->apellido_materno;
@@ -708,17 +731,30 @@ class controladorEncargado extends Controller
                     'color' => $color, // Agrega el color aquí
                 ];
             });
+        }  
 
         // Devolver la respuesta JSON con los eventos
         return response()->json($events);
     }
 
     public function tablePersonal(){
+
+    if(session('area') === "LOGISTICA"){
         $personal = Empleados::select('empleados.*','puestos.nombre as puesto','horarios.nombre as horario')
         ->join('horarios', 'empleados.horario_id','horarios.id_horario')
         ->join('puestos','empleados.puesto_id','puestos.id_puesto')
+        ->join('areas','puestos.area_id','areas.id_area')
+        ->where('empleados.estatus','1')
+        ->where('areas.nombre','LOGISTICA')
+        ->get();
+    } else {
+        $personal = Empleados::select('empleados.*','puestos.nombre as puesto','horarios.nombre as horario')
+        ->join('horarios', 'empleados.horario_id','horarios.id_horario')
+        ->join('puestos','empleados.puesto_id','puestos.id_puesto')
+        ->join('areas','puestos.area_id','areas.id_area')
         ->where('empleados.estatus','1')
         ->get();
+    }
 
         return view('Encargado.personal',compact('personal'));
     }
@@ -899,22 +935,44 @@ class controladorEncargado extends Controller
 
     public function reporteGeneral(){
 
-        // Obtener todos los empleados
-        $empleados = Empleados::select('empleados.*','puestos.nombre as puesto', 'areas.nombre as area','divisiones.nombre as division')
-        ->join('puestos','empleados.puesto_id','puestos.id_puesto')
-        ->join('areas','puestos.area_id','areas.id_area')
-        ->join('divisiones','areas.division_id','divisiones.id_division')
-        ->orderBy('empleados.id_empleado','asc')
-        ->get();
+        if(session('area') === "LOGISTICA"){
+            // Obtener todos los empleados
+            $empleados = Empleados::select('empleados.*','puestos.nombre as puesto', 'areas.nombre as area','divisiones.nombre as division')
+            ->join('puestos','empleados.puesto_id','puestos.id_puesto')
+            ->join('areas','puestos.area_id','areas.id_area')
+            ->join('divisiones','areas.division_id','divisiones.id_division')
+            ->where('areas.nombre','LOGISTICA')
+            ->orderBy('empleados.id_empleado','asc')
+            ->get();
 
-        $historial = vacaciones::select('empleados.*','divisiones.nombre as division','areas.nombre as area','puestos.nombre as puesto',
-        'vacaciones.*','vacaciones.estatus as vacacionEstatus')
-        ->join('empleados','vacaciones.empleado_id','empleados.id_empleado')
-        ->join('puestos','empleados.puesto_id','puestos.id_puesto')
-        ->join('areas','puestos.area_id','areas.id_area')
-        ->join('divisiones','areas.division_id','divisiones.id_division')
-        ->orderBy('vacaciones.fecha_inicio','desc')
-        ->get();
+            $historial = vacaciones::select('empleados.*','divisiones.nombre as division','areas.nombre as area','puestos.nombre as puesto',
+            'vacaciones.*','vacaciones.estatus as vacacionEstatus')
+            ->join('empleados','vacaciones.empleado_id','empleados.id_empleado')
+            ->join('puestos','empleados.puesto_id','puestos.id_puesto')
+            ->join('areas','puestos.area_id','areas.id_area')
+            ->join('divisiones','areas.division_id','divisiones.id_division')
+            ->where('areas.nombre','LOGISTICA')
+            ->orderBy('vacaciones.fecha_inicio','desc')
+            ->get();
+            
+        }else{
+            // Obtener todos los empleados
+            $empleados = Empleados::select('empleados.*','puestos.nombre as puesto', 'areas.nombre as area','divisiones.nombre as division')
+            ->join('puestos','empleados.puesto_id','puestos.id_puesto')
+            ->join('areas','puestos.area_id','areas.id_area')
+            ->join('divisiones','areas.division_id','divisiones.id_division')
+            ->orderBy('empleados.id_empleado','asc')
+            ->get();
+
+            $historial = vacaciones::select('empleados.*','divisiones.nombre as division','areas.nombre as area','puestos.nombre as puesto',
+            'vacaciones.*','vacaciones.estatus as vacacionEstatus')
+            ->join('empleados','vacaciones.empleado_id','empleados.id_empleado')
+            ->join('puestos','empleados.puesto_id','puestos.id_puesto')
+            ->join('areas','puestos.area_id','areas.id_area')
+            ->join('divisiones','areas.division_id','divisiones.id_division')
+            ->orderBy('vacaciones.fecha_inicio','desc')
+            ->get();
+        }        
 
         // Formatear fechas
         $historial->transform(function($item) {

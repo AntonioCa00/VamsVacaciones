@@ -53,8 +53,10 @@
         <!-- DataTales Example -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <a class="btn btn-primary" href="{{ route('crearPersonalEnc') }}">Agregar nuevo personal</a>
-                <a class="btn btn-success" href="{{ route('reporte') }}" style="margin-left: 70%;"><i
+                @if (session('area') != "LOGISTICA")
+                    <a class="btn btn-primary" href="{{ route('crearPersonalEnc') }}">Agregar nuevo personal</a>
+                @endif                
+                <a class="btn btn-success" href="{{ route('reporte') }}"><i
                     class="fas fa-download fa-sm text-white-50"></i>Reporte general</a>
             </div>
             <div class="card-header py-3">
@@ -69,7 +71,10 @@
                                 <th>Apellidos:</th>
                                 <th>Puesto:</th>
                                 <th>Detalles:</th>
-                                <th>Eliminar:</th>
+                                @if (session('area') != "LOGISTICA")
+                                    <th>Eliminar:</th>
+                                @endif
+                                
                             </tr>
                         </thead>
                         <tbody>
@@ -85,43 +90,45 @@
                                             data-target="#detalles{{ $persona->id_empleado }}">
                                             <img src="{{ asset('img/detalles.png') }}" alt="Abrir detalles">
                                         </a>
-                                    <th class="col-1">
-                                        <a class="btn btn-danger" href="#" data-toggle="modal"
-                                            data-target="#eliminarPersona{{ $persona->id_empleado }}">
-                                            Eliminar
-                                        </a>
-                                        <!-- Logout Modal-->
-                                        <div class="modal fade" id="eliminarPersona{{ $persona->id_empleado }}"
-                                            tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                                            aria-hidden="true">
-                                            <div class="modal-dialog" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="exampleModalLabel">¿Ha tomado una
-                                                            decisión?</h5>
-                                                        <button class="close" type="button" data-dismiss="modal"
-                                                            aria-label="Close">
-                                                            <span aria-hidden="true">X</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">Selecciona confirmar para eliminar este
-                                                        trabajador</div>
-                                                    <div class="modal-footer">
-                                                        <button class="btn btn-secondary" type="button"
-                                                            data-dismiss="modal">cancelar</button>
-                                                        {{-- {{ route('deletePersonal',$persona->id_empleado) }} --}}
-                                                        <form action="{{ route('deletePersonal', $persona->id_empleado) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            {!! method_field('PUT') !!}
-                                                            <button type="submit"
-                                                                class="btn btn-primary">confirmar</button>
-                                                        </form>
+                                    @if (session('area') != "LOGISTICA")
+                                        <th class="col-1">
+                                            <a class="btn btn-danger" href="#" data-toggle="modal"
+                                                data-target="#eliminarPersona{{ $persona->id_empleado }}">
+                                                Eliminar
+                                            </a>
+                                            <!-- Logout Modal-->
+                                            <div class="modal fade" id="eliminarPersona{{ $persona->id_empleado }}"
+                                                tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                                                aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="exampleModalLabel">¿Ha tomado una
+                                                                decisión?</h5>
+                                                            <button class="close" type="button" data-dismiss="modal"
+                                                                aria-label="Close">
+                                                                <span aria-hidden="true">X</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">Selecciona confirmar para eliminar este
+                                                            trabajador</div>
+                                                        <div class="modal-footer">
+                                                            <button class="btn btn-secondary" type="button"
+                                                                data-dismiss="modal">cancelar</button>
+                                                            {{-- {{ route('deletePersonal',$persona->id_empleado) }} --}}
+                                                            <form action="{{ route('deletePersonal', $persona->id_empleado) }}"
+                                                                method="POST">
+                                                                @csrf
+                                                                {!! method_field('PUT') !!}
+                                                                <button type="submit"
+                                                                    class="btn btn-primary">confirmar</button>
+                                                            </form>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </th>
+                                        </th>
+                                    @endif
                                 </tr>
                                 <div class="modal fade" id="detalles{{ $persona->id_empleado }}" tabindex="-1"
                                     role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -168,7 +175,9 @@
                                             </div>
                                             <div class="modal-footer py-2 d-flex justify-content-between">
                                                 <a class="btn btn-warning" href="{{ route('histoIndividual',$persona->id_empleado) }}">Revisar historial</a>
-                                                <a href="{{ route('editarPersonalEnc', $persona->id_empleado) }}" class="btn btn-success">Actualizar información</a>
+                                                @if (session('area') != "LOGISTICA")
+                                                    <a href="{{ route('editarPersonalEnc', $persona->id_empleado) }}" class="btn btn-success">Actualizar información</a>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
