@@ -411,24 +411,30 @@ class controladorEmpleado extends Controller
 
     public function tableHistorial() {
         // Obtener el historial de vacaciones
-        $historialVac = vacaciones::where('empleado_id', session('loginId'))->get();
+        $historialVac = vacaciones::where('empleado_id', session('loginId'))
+        ->get()
+        ->map(function ($vacacion) {
+            $vacacion->fecha_inicio = Carbon::parse($vacacion->fecha_inicio)->format('d/m/Y');
+            $vacacion->fecha_fin = Carbon::parse($vacacion->fecha_fin)->format('d/m/Y');
+            return $vacacion;
+        });
 
-        foreach ($historialVac as $historial) {
-            // Convertir la fecha de inicio a una instancia de Carbon y formatear solo la fecha como dd/MM/yyyy
-            $fechaDesdeEsp = Carbon::parse($historial->fecha_inicio)->translatedFormat('d/M/Y');
-            $historial->inicio = $fechaDesdeEsp;
+        // foreach ($historialVac as $historial) {
+        //     // Convertir la fecha de inicio a una instancia de Carbon y formatear solo la fecha como dd/MM/yyyy
+        //     $fechaDesdeEsp = Carbon::parse($historial->fecha_inicio)->translatedFormat('d/M/Y');
+        //     $historial->inicio = $fechaDesdeEsp;
 
-            // Convertir la fecha de fin a una instancia de Carbon y formatear solo la fecha como dd/MM/yyyy
-            $fechaHastaEsp = Carbon::parse($historial->fecha_fin)->translatedFormat('d/M/Y');
-            $historial->fin = $fechaHastaEsp;
+        //     // Convertir la fecha de fin a una instancia de Carbon y formatear solo la fecha como dd/MM/yyyy
+        //     $fechaHastaEsp = Carbon::parse($historial->fecha_fin)->translatedFormat('d/M/Y');
+        //     $historial->fin = $fechaHastaEsp;
 
-            // Primero, convertir a una instancia de Carbon y formatear a 'Y-m-d'
-            $fechaCreated = date('d/m/Y', strtotime($historial->created_at));
-            // Luego, convertir a una instancia de Carbon y formatear a 'd/M/Y'
-            $fechaCreatedEsp = Carbon::parse($historial->created_at)->translatedFormat('d/M/Y');
+        //     // Primero, convertir a una instancia de Carbon y formatear a 'Y-m-d'
+        //     $fechaCreated = date('d/m/Y', strtotime($historial->created_at));
+        //     // Luego, convertir a una instancia de Carbon y formatear a 'd/M/Y'
+        //     $fechaCreatedEsp = Carbon::parse($historial->created_at)->translatedFormat('d/M/Y');
 
-            $historial->fecha_creacion = $fechaCreatedEsp;
-        }
+        //     $historial->fecha_creacion = $fechaCreatedEsp;
+        // }
 
         // Retornar la vista con la variable compactada
         return view('Empleados.historialVacaciones', compact('historialVac'));

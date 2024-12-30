@@ -64,8 +64,8 @@
                         <tbody>
                             @foreach ($historialVac as $historial)
                                 <tr>
-                                    <th>{{ $historial->inicio }}</th>
-                                    <th class="col-2">{{ $historial->fin }} {{ $historial->apellido_materno }}</th>
+                                    <th>{{ $historial->fecha_inicio }}</th>
+                                    <th class="col-2">{{ $historial->fecha_fin }} {{ $historial->apellido_materno }}</th>
                                     <th class="col-2">{{ $historial->dias_tomados }} Días</th>
                                     <th>
                                         {{ $historial->estatus === '0' ? 'Solicitadas' : 'Autorizado' }}
