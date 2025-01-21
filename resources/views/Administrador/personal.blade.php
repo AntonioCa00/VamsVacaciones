@@ -170,6 +170,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
+                                                    <a class="btn btn-warning" href="{{ route('histoIndividualAdm',$persona->id_empleado) }}">Revisar historial</a>
                                                     <a href="{{ route('editarPersonal', $persona->id_empleado) }}"
                                                         class="btn btn-success">Actualizar información</a>
                                                 </div>
