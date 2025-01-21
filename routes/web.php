@@ -49,6 +49,7 @@ Route::middleware(['authcheck'])->group(function () {
         Route::get('historial/Administrador',[controladorAdmin::class,'tableHistorial'])->name('historialAdm');
         Route::get('consultar/vacaciones/Administrador',[controladorAdmin::class,'calendario'])->name('calendarioAdm');
         Route::get('consultar/vacaciones/Administrador/programacion', [controladorAdmin::class, 'getEvents'])->name('programaAdm');
+        Route::get('historial/Induvidual/ADministrador/{id}',[controladorAdmin::class,'histoIndividual'])->name('histoIndividualAdm');
 
         //-------------------
         Route::post('divisiones/create',[controladorAdmin::class,'createDivision'])->name('createDivision');

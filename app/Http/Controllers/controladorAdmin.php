@@ -351,6 +351,100 @@ class controladorAdmin extends Controller
         return view('Administrador.personal',compact('personal'));
     }
 
+    public function histoIndividual($id){
+        $historialVac = vacaciones::where('empleado_id',$id)
+        ->get();
+
+        $empleado = Empleados::where('id_empleado',$id)->first();
+
+        foreach ($historialVac as $historial) {
+            // Convertir la fecha de inicio a una instancia de Carbon y formatear solo la fecha como dd/MM/yyyy
+            $fechaDesdeEsp = Carbon::parse($historial->fecha_inicio)->translatedFormat('d/M/Y');
+            $historial->inicio = $fechaDesdeEsp;
+
+            // Convertir la fecha de fin a una instancia de Carbon y formatear solo la fecha como dd/MM/yyyy
+            $fechaHastaEsp = Carbon::parse($historial->fecha_fin)->translatedFormat('d/M/Y');
+            $historial->fin = $fechaHastaEsp;
+
+            // Primero, convertir a una instancia de Carbon y formatear a 'Y-m-d'
+            $fechaCreated = date('d/m/Y', strtotime($historial->created_at));
+            // Luego, convertir a una instancia de Carbon y formatear a 'd/M/Y'
+            $fechaCreatedEsp = Carbon::parse($historial->created_at)->translatedFormat('d/M/Y');
+
+            $historial->fecha_creacion = $fechaCreatedEsp;
+        }
+
+        $user = Empleados::where('id_empleado', $id)->first();
+
+        // Crear una instancia de Carbon a partir de la variable de fecha
+        $fecha = Carbon::createFromFormat('Y-m-d', $user->fecha_ingreso);
+        // Obtener el año
+        $anio = $fecha->year;
+
+        switch (true) {
+            case $anio >= 2023:
+                // Calcular la diferencia en días entre la fecha de ingreso y la fecha actual
+                $diferencia = Carbon::now()->diffInDays($user->fecha_ingreso);
+                // Convertir la diferencia de días a años en formato decimal
+                $antiguedad = round($diferencia / 365, 2);
+
+                // Buscar si la antigüedad está entre ingreso y término en la tabla 'tablas_Vacaciones'
+                $registro = tablasVacaciones::where('ley_id', 2)
+                    ->where('ingreso', '<=', $antiguedad)  // Comparar antigüedad con el valor de 'ingreso'
+                    ->where('termino', '>=', $antiguedad)  // Comparar antigüedad con el valor de 'termino'
+                    ->first();
+
+                $dias_tomadosI = vacaciones::where('empleado_id', $id)
+                    ->sum('dias_tomados');                
+
+                $dias_disponiblesI = $registro->acumulado - $dias_tomadosI;
+
+                break;
+
+                case $anio < 2023:
+                    // Convierte fecha de finalización en instancia de carbon
+                    $fechaCarbon = Carbon::parse('2022-12-31'); // Esta es la fecha de finalización
+                    $fechaIngreso = Carbon::parse($user->fecha_ingreso);
+                    // Calcular la diferencia en días entre la fecha de ingreso y la fecha de la primer ley
+                    $diferencia1 = $fechaCarbon->diffInDays($user->fecha_ingreso);
+                    // Convertir la diferencia de días a años en formato decimal
+                    $antiguedad1 = round($diferencia1 / 365, 5);
+                    $dias1 = $antiguedad1 * 6;
+
+                    // Calcular segundo corte
+                    $fechaSegundo = Carbon::parse('2023-01-01'); // Esta es la fecha de inicio de la segunda ley
+                    $fechaAnio = $fechaIngreso->addYear(); // Esta será la fecha un año
+
+                    // Calcular la diferencia en días entre la fecha de ingreso y la nueva fecha
+                    $diferencia2 = $fechaSegundo->diffInDays($fechaAnio);
+
+                    // Convertir la diferencia de días a años en formato decimal
+                    $antiguedad2 = round($diferencia2 / 365, 6);
+                    $dias2 = $antiguedad2 * 12;
+
+                    // Calcular la diferencia en días entre la fecha de ingreso y la fecha actual
+                    $diferencia3 = Carbon::now()->diffInDays($user->fecha_ingreso);
+                    // Convertir la diferencia de días a años en formato decimal
+                    $antiguedad3 = round($diferencia3 / 365, 6);
+
+                    // Buscar si la antigüedad está entre ingreso y término en la tabla 'tablas_Vacaciones'
+                    $dias3 = tablasVacaciones::where('ley_id', 2)
+                    ->where('ingreso', '<=', $antiguedad3)  // Comparar antigüedad con el valor de 'ingreso'
+                    ->where('termino', '>=', $antiguedad3)  // Comparar antigüedad con el valor de 'termino'
+                    ->first();
+
+                    $acumulado = round($dias1+$dias2+($dias3->acumulado-12));
+                    $dias_tomadosI = vacaciones::where('empleado_id',$id)
+                    ->sum('dias_tomados');
+
+                    $dias_disponiblesI = $acumulado - $dias_tomadosI;
+
+                    break;
+            }
+
+        return view('Administrador.histIndividual',compact('historialVac','empleado','dias_tomadosI','dias_disponiblesI'));
+    }
+
     public function crearPersonal (){
         $puestos = Puestos::select('puestos.id_puesto','puestos.nombre','areas.nombre as area')
         ->join('areas','puestos.area_id','areas.id_area')
