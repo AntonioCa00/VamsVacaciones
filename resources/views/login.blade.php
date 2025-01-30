@@ -69,12 +69,14 @@
                                     <form class="user" method="POST" action="{{route('validate')}}">
                                         @csrf <!-- Agrega el campo CSRF token para protección -->
                                         <div class="form-group">
+                                            <label for="Numero_empleado">Número de empleado:</label>
                                             <input value="{{old('numero')}}" type="text" class="form-control form-control-user" name="numero"
                                                 id="exampleInputEmail" aria-describedby="emailHelp" placeholder="Ingresa tu numero de empleado" required>
                                         </div>
                                         <div class="form-group">
+                                            <label for="Contraseña">Contraseña:</label>
                                             <input type="password" class="form-control form-control-user" name="contrasena"
-                                                id="exampleInputPassword" placeholder="Ingresa tu contraseña" required>
+                                                id="exampleInputPassword" placeholder="Tu fecha de nacimiento en formato aa/mm/dd" required>
                                         </div>
                                         <div class="form-group">
                                             <!-- Otros campos si es necesario -->
