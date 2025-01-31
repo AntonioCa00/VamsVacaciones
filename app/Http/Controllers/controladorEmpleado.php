@@ -414,8 +414,8 @@ class controladorEmpleado extends Controller
         $historialVac = vacaciones::where('empleado_id', session('loginId'))
         ->get()
         ->map(function ($vacacion) {
-            $vacacion->fecha_inicio = Carbon::parse($vacacion->fecha_inicio)->format('d/m/Y');
-            $vacacion->fecha_fin = Carbon::parse($vacacion->fecha_fin)->format('d/m/Y');
+            $vacacion->fecha_inicio = Carbon::parse($vacacion->fecha_inicio)->format('Y-m-d'); // Formato correcto para inputs date
+            $vacacion->fecha_fin = Carbon::parse($vacacion->fecha_fin)->format('Y-m-d'); // Formato correcto para inputs date
             return $vacacion;
         });
 
@@ -446,6 +446,8 @@ class controladorEmpleado extends Controller
             return back()->with('incorrecto','incorrecto');
         } else{
 
+            $vacacion = vacaciones::where('id_vacacion',$id)->first();
+            
             //Define el tipo de permiso que se esta solicitando
             $permiso = 'Vacaciones';
 
@@ -501,7 +503,8 @@ class controladorEmpleado extends Controller
                 //Meses en español
                 Carbon::setLocale('es_MX');    $fechaHastaEsp = $hasta->translatedFormat('d/M/Y');
 
-                $restantes = session('dias_disponibles')-$duracion;
+                $saldoAnterior = session('dias_disponibles') + $vacacion->dias_tomados;
+                $restantes = $saldoAnterior - $duracion;
 
                 // Crear un arreglo asociativo con las variables
                 $data = [

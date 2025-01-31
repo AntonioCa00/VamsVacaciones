@@ -400,145 +400,156 @@ class controladorEncargado extends Controller
 
     public function tableHistorial() {
         // Obtener el historial de vacaciones
-        $historialVac = vacaciones::where('empleado_id', session('loginId'))->get();
+        $historialVac = vacaciones::where('empleado_id', session('loginId'))
+        ->get()
+        ->map(function ($vacacion) {
+            $vacacion->fecha_inicio = Carbon::parse($vacacion->fecha_inicio)->format('Y-m-d'); // Formato correcto para inputs date
+            $vacacion->fecha_fin = Carbon::parse($vacacion->fecha_fin)->format('Y-m-d'); // Formato correcto para inputs date
+            return $vacacion;
+        });
+        // foreach ($historialVac as $historial) {
+        //     // Convertir la fecha de inicio a una instancia de Carbon y formatear solo la fecha como dd/MM/yyyy
+        //     $fechaDesdeEsp = Carbon::parse($historial->fecha_inicio)->translatedFormat('d/M/Y');
+        //     $historial->inicio = $fechaDesdeEsp;
 
-        foreach ($historialVac as $historial) {
-            // Convertir la fecha de inicio a una instancia de Carbon y formatear solo la fecha como dd/MM/yyyy
-            $fechaDesdeEsp = Carbon::parse($historial->fecha_inicio)->translatedFormat('d/M/Y');
-            $historial->inicio = $fechaDesdeEsp;
+        //     // Convertir la fecha de fin a una instancia de Carbon y formatear solo la fecha como dd/MM/yyyy
+        //     $fechaHastaEsp = Carbon::parse($historial->fecha_fin)->translatedFormat('d/M/Y');
+        //     $historial->fin = $fechaHastaEsp;
 
-            // Convertir la fecha de fin a una instancia de Carbon y formatear solo la fecha como dd/MM/yyyy
-            $fechaHastaEsp = Carbon::parse($historial->fecha_fin)->translatedFormat('d/M/Y');
-            $historial->fin = $fechaHastaEsp;
+        //     // Primero, convertir a una instancia de Carbon y formatear a 'Y-m-d'
+        //     $fechaCreated = date('d/m/Y', strtotime($historial->created_at));
+        //     // Luego, convertir a una instancia de Carbon y formatear a 'd/M/Y'
+        //     $fechaCreatedEsp = Carbon::parse($historial->created_at)->translatedFormat('d/M/Y');
 
-            // Primero, convertir a una instancia de Carbon y formatear a 'Y-m-d'
-            $fechaCreated = date('d/m/Y', strtotime($historial->created_at));
-            // Luego, convertir a una instancia de Carbon y formatear a 'd/M/Y'
-            $fechaCreatedEsp = Carbon::parse($historial->created_at)->translatedFormat('d/M/Y');
-
-            $historial->fecha_creacion = $fechaCreatedEsp;
-        }
+        //     $historial->fecha_creacion = $fechaCreatedEsp;
+        // }
 
         // Retornar la vista con la variable compactada
         return view('Encargado.historialVacaciones', compact('historialVac'));
     }
 
     public function updateVacacion(Request $req, $id){
-        //Define el tipo de permiso que se esta solicitando
-        $permiso = 'Vacaciones';
 
-        //Formatea los request a Carbon
-        $desde = Carbon::parse($req->desde);
-        $hasta = Carbon::parse($req->hasta);
-
-        $dias = horarios::select('horarios.nombre as horario')
-        ->join('empleados', 'horarios.id_horario', 'empleados.horario_id')
-        ->where('empleados.id_empleado', session('loginId'))->first();
-
-        // Separar los días en un array
-        $diasLaborales = explode(' / ', $dias->horario);
-
-        // Mapear los nombres de los días a los valores de Carbon
-        $mapDias = [
-            'Lunes' => Carbon::MONDAY,
-            'Martes' => Carbon::TUESDAY,
-            'Miercoles' => Carbon::WEDNESDAY,
-            'Jueves' => Carbon::THURSDAY,
-            'Viernes' => Carbon::FRIDAY,
-            'Sabado' => Carbon::SATURDAY,
-            'Domingo' => Carbon::SUNDAY
-        ];
-
-        // Crear un array con los valores numéricos correspondientes a los días de trabajo
-        $diasLaboralesNumeros = array_map(function($dia) use ($mapDias) {
-            return $mapDias[$dia];
-        }, $diasLaborales);
-
-        // Obtener los días festivos de México
-        $year = $desde->year; // Obtener el año de la fecha inicial
-        $yearF = $hasta->year;
-        $diasFestivos = $this->obtenerDiasFestivos($year,$yearF);
-
-        // Calcular la duración en días laborales excluyendo festivos
-        $duracion = 0;
-        for ($date = $desde->copy(); $date->lte($hasta); $date->addDay()) {
-            // Verificar si el día es un día laboral y no un día festivo
-            if (in_array($date->dayOfWeek, $diasLaboralesNumeros) && !in_array($date->toDateString(), $diasFestivos)) {
-                $duracion++;
-            }
-        }
-
-        if ($duracion <= session('dias_disponibles')){
-
-            $fechaHoy = Carbon::now();
-            $motivo = $req->motivo;
-
-            //Meses en español
-            Carbon::setLocale('es_MX');$fechaDesdeEsp = $desde->translatedFormat('d/M/Y');
-
-            //Meses en español
-            Carbon::setLocale('es_MX');$fechaHastaEsp = $hasta->translatedFormat('d/M/Y');
-
-            $restantes = session('dias_disponibles')-$duracion;
-
-            // Crear un arreglo asociativo con las variables
-            $data = [
-                'inicio' => $fechaDesdeEsp,
-                'fin' => $fechaHastaEsp,
-                'duracion' => $duracion,
-                'motivo'=>$motivo,
-                'restante'=>$restantes
-            ];
-
-            // Si prefieres los nombres de los meses en español
-            setlocale(LC_TIME, 'es_ES.UTF-8'); // Establecer el locale para español
-            $fechaHoyEsp = $fechaHoy->translatedFormat('d/M/Y'); // Aquí está la corrección
-
-            $datosEmpleado = [
-                'empleadoN'=>session('empleadoN'),
-                'nombres' => session('loginNombres'),
-                'fecha'=>$fechaHoyEsp,
-                'apellidoP' => session('loginApepat'),
-                'apellidoM' => session('loginApemat'),
-                'puesto'=>session('puesto'),
-                'area'=>session('area'),
-            ];
-
-            $idcorresponde = $id;
-
-            // Se genera el nombre y ruta para guardar PDF
-            $nombreArchivo = 'vacaciones_' . $idcorresponde . '.pdf';
-            $rutaDescargas = 'vacaciones/' . $nombreArchivo;
-
-
-            $fileToDelete = public_path($rutaDescargas);
-            // Luego, verifica si el archivo realmente existe antes de intentar eliminarlo.
-            if (file_exists($fileToDelete)) {
-                unlink($fileToDelete);
-            }
-
-            // Incluir el archivo FormatoMultiple.php y pasar la ruta del archivo como una variable
-            ob_start(); //* Iniciar el búfer de salida para pasar las variables al PDF
-            include(public_path('/pdf/TCPDF-main/examples/FormatoMultiple.php'));
-            ob_end_clean();
-
-            vacaciones::where('id_vacacion',$id)->update([
-                "fecha_inicio"=>$desde,
-                "fecha_fin"=>$hasta,
-                "dias_tomados"=>$duracion,
-                "observaciones"=>$motivo,
-                "pdf"=>$rutaDescargas,
-                "estatus"=>'0',
-                "updated_at"=>Carbon::now(),
-            ]);
-
-            session()->put('dias_disponibles', $restantes);
-            
-            return redirect('historial/Encargado')->with('editado','editado');
-
+        if($req->hasta < $req->desde){
+            return back()->with('incorrecto','incorrecto');
         } else{
-            return back()->with('insuficiente','insuficiente')->withInput();
-        }
+            //Define el tipo de permiso que se esta solicitando
+            $permiso = 'Vacaciones';
+
+            //Formatea los request a Carbon
+            $desde = Carbon::parse($req->desde);
+            $hasta = Carbon::parse($req->hasta);
+
+            $dias = horarios::select('horarios.nombre as horario')
+            ->join('empleados', 'horarios.id_horario', 'empleados.horario_id')
+            ->where('empleados.id_empleado', session('loginId'))->first();
+
+            // Separar los días en un array
+            $diasLaborales = explode(' / ', $dias->horario);
+
+            // Mapear los nombres de los días a los valores de Carbon
+            $mapDias = [
+                'Lunes' => Carbon::MONDAY,
+                'Martes' => Carbon::TUESDAY,
+                'Miercoles' => Carbon::WEDNESDAY,
+                'Jueves' => Carbon::THURSDAY,
+                'Viernes' => Carbon::FRIDAY,
+                'Sabado' => Carbon::SATURDAY,
+                'Domingo' => Carbon::SUNDAY
+            ];
+
+            // Crear un array con los valores numéricos correspondientes a los días de trabajo
+            $diasLaboralesNumeros = array_map(function($dia) use ($mapDias) {
+                return $mapDias[$dia];
+            }, $diasLaborales);
+
+            // Obtener los días festivos de México
+            $year = $desde->year; // Obtener el año de la fecha inicial
+            $yearF = $hasta->year;
+            $diasFestivos = $this->obtenerDiasFestivos($year,$yearF);
+
+            // Calcular la duración en días laborales excluyendo festivos
+            $duracion = 0;
+            for ($date = $desde->copy(); $date->lte($hasta); $date->addDay()) {
+                // Verificar si el día es un día laboral y no un día festivo
+                if (in_array($date->dayOfWeek, $diasLaboralesNumeros) && !in_array($date->toDateString(), $diasFestivos)) {
+                    $duracion++;
+                }
+            }
+
+            if ($duracion <= session('dias_disponibles')){
+
+                $fechaHoy = Carbon::now();
+                $motivo = $req->motivo;
+
+                //Meses en español
+                Carbon::setLocale('es_MX');$fechaDesdeEsp = $desde->translatedFormat('d/M/Y');
+
+                //Meses en español
+                Carbon::setLocale('es_MX');$fechaHastaEsp = $hasta->translatedFormat('d/M/Y');
+
+                $saldoAnterior = session('dias_disponibles') + $vacacion->dias_tomados;
+                $restantes = $saldoAnterior - $duracion;
+
+                // Crear un arreglo asociativo con las variables
+                $data = [
+                    'inicio' => $fechaDesdeEsp,
+                    'fin' => $fechaHastaEsp,
+                    'duracion' => $duracion,
+                    'motivo'=>$motivo,
+                    'restante'=>$restantes
+                ];
+
+                // Si prefieres los nombres de los meses en español
+                setlocale(LC_TIME, 'es_ES.UTF-8'); // Establecer el locale para español
+                $fechaHoyEsp = $fechaHoy->translatedFormat('d/M/Y'); // Aquí está la corrección
+
+                $datosEmpleado = [
+                    'empleadoN'=>session('empleadoN'),
+                    'nombres' => session('loginNombres'),
+                    'fecha'=>$fechaHoyEsp,
+                    'apellidoP' => session('loginApepat'),
+                    'apellidoM' => session('loginApemat'),
+                    'puesto'=>session('puesto'),
+                    'area'=>session('area'),
+                ];
+
+                $idcorresponde = $id;
+
+                // Se genera el nombre y ruta para guardar PDF
+                $nombreArchivo = 'vacaciones_' . $idcorresponde . '.pdf';
+                $rutaDescargas = 'vacaciones/' . $nombreArchivo;
+
+
+                $fileToDelete = public_path($rutaDescargas);
+                // Luego, verifica si el archivo realmente existe antes de intentar eliminarlo.
+                if (file_exists($fileToDelete)) {
+                    unlink($fileToDelete);
+                }
+
+                // Incluir el archivo FormatoMultiple.php y pasar la ruta del archivo como una variable
+                ob_start(); //* Iniciar el búfer de salida para pasar las variables al PDF
+                include(public_path('/pdf/TCPDF-main/examples/FormatoMultiple.php'));
+                ob_end_clean();
+
+                vacaciones::where('id_vacacion',$id)->update([
+                    "fecha_inicio"=>$desde,
+                    "fecha_fin"=>$hasta,
+                    "dias_tomados"=>$duracion,
+                    "observaciones"=>$motivo,
+                    "pdf"=>$rutaDescargas,
+                    "estatus"=>'0',
+                    "updated_at"=>Carbon::now(),
+                ]);
+
+                session()->put('dias_disponibles', $restantes);
+                
+                return redirect('historial/Encargado')->with('editado','editado');
+
+            } else{
+                return back()->with('insuficiente','insuficiente')->withInput();
+            }
+        }        
     }
 
     public function deleteVacacion($id){
